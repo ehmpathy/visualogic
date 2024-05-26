@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/ehmpathy/visualogic/compare/v1.0.0...v1.1.0) (2024-05-26)
+
+
+### Features
+
+* **procedure:** expose procedure domain types ([66b0a85](https://github.com/ehmpathy/visualogic/commit/66b0a8521e4e38246b90c8b99994f16de2fc4da2))
+
 ## 1.0.0 (2024-05-25)
 
 
