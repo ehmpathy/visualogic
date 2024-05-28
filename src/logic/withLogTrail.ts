@@ -88,6 +88,28 @@ export const withLogTrail = <T extends (...args: any[]) => any>(
     // now execute the method
     const result = logic(...input);
 
+    // if the result was a promise, log when that method crosses the reporting threshold, to identify which procedures are slow
+    if (isAPromise(result)) {
+      // define how to log the breach, on breach
+      const onDurationBreach = () =>
+        logMethod(
+          `${name}.duration.breach: procedure has taken longer than duration report threshold`,
+          {
+            input: logInputMethod(...input),
+            already: { duration: `${durationReportingThresholdInSeconds} sec` },
+          },
+        );
+
+      // define a timeout which will trigger on duration threshold
+      const onBreachTrigger = setTimeout(
+        onDurationBreach,
+        durationReportingThresholdInSeconds,
+      );
+
+      // remove the timeout when the operation completes, to prevent logging if completes before duration
+      result.finally(() => clearTimeout(onBreachTrigger));
+    }
+
     // define what to do when we have output
     const logOutput = (output: Awaited<ReturnType<T>>) => {
       const endTimeInMilliseconds = new Date().getTime();
