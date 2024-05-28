@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/ehmpathy/visualogic/compare/v1.1.0...v1.2.0) (2024-05-28)
+
+
+### Features
+
+* **breach:** log breaches before termination for observability ([2210ac9](https://github.com/ehmpathy/visualogic/commit/2210ac93c86f45b5f8a3cecf1530b3e3f6c99978))
+
 ## [1.1.0](https://github.com/ehmpathy/visualogic/compare/v1.0.0...v1.1.0) (2024-05-26)
 
 
