@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/ehmpathy/visualogic/compare/v1.2.0...v1.2.1) (2024-06-02)
+
+
+### Bug Fixes
+
+* **lint:** ensure unwaited promise explicitly voided ([e6621de](https://github.com/ehmpathy/visualogic/commit/e6621de0ff071b76e2128b6d66b23b65027342d9))
+* **unit:** ensure log message is expected ([27780a4](https://github.com/ehmpathy/visualogic/commit/27780a47a5f46e42a68d1bb4fb656cf5ed2478b9))
+
 ## [1.2.0](https://github.com/ehmpathy/visualogic/compare/v1.1.0...v1.2.0) (2024-05-28)
 
 
