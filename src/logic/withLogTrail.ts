@@ -107,7 +107,7 @@ export const withLogTrail = <T extends (...args: any[]) => any>(
       );
 
       // remove the timeout when the operation completes, to prevent logging if completes before duration
-      result.finally(() => clearTimeout(onBreachTrigger));
+      void result.finally(() => clearTimeout(onBreachTrigger));
     }
 
     // define what to do when we have output
