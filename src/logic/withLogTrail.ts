@@ -92,18 +92,15 @@ export const withLogTrail = <T extends (...args: any[]) => any>(
     if (isAPromise(result)) {
       // define how to log the breach, on breach
       const onDurationBreach = () =>
-        logMethod(
-          `${name}.duration.breach: procedure has taken longer than duration report threshold`,
-          {
-            input: logInputMethod(...input),
-            already: { duration: `${durationReportingThresholdInSeconds} sec` },
-          },
-        );
+        logMethod(`${name}.duration.breach`, {
+          input: logInputMethod(...input),
+          already: { duration: `${durationReportingThresholdInSeconds} sec` },
+        });
 
       // define a timeout which will trigger on duration threshold
       const onBreachTrigger = setTimeout(
         onDurationBreach,
-        durationReportingThresholdInSeconds,
+        durationReportingThresholdInSeconds * 1000,
       );
 
       // remove the timeout when the operation completes, to prevent logging if completes before duration

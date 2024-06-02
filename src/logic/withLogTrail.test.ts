@@ -69,11 +69,19 @@ describe('withLogTrail', () => {
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
-      expect(logDebugSpy).toHaveBeenCalledTimes(2);
+      expect(logDebugSpy).toHaveBeenCalledTimes(3);
       expect(logDebugSpy).toHaveBeenNthCalledWith(1, 'castToUpperCase.input', {
         input: { name: 'casey' },
       });
-      expect(logDebugSpy).toHaveBeenNthCalledWith(2, 'castToUpperCase.output', {
+      expect(logDebugSpy).toHaveBeenNthCalledWith(
+        2,
+        'castToUpperCase.duration.breach',
+        {
+          input: { name: 'casey' },
+          already: { duration: '1 sec' },
+        },
+      );
+      expect(logDebugSpy).toHaveBeenNthCalledWith(3, 'castToUpperCase.output', {
         input: { name: 'casey' },
         output: ['CASEY'],
         duration: expect.stringContaining(' sec'),
