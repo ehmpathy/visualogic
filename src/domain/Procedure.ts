@@ -8,17 +8,16 @@
  * note
  * - javascript's "functions" are actually, by definition, procedures
  */
-export type Procedure = (
+export type Procedure<TInput = any, TContext = any, TOutput = any> = (
   /**
    * the input of the procedure
    */
-  input: any,
-
+  input: TInput,
   /**
    * the context within which the procedure runs
    */
-  context?: any,
-) => any;
+  context: TContext,
+) => TOutput;
 
 /**
  * extracts the input::Type of a procedure
