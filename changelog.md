@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2](https://github.com/ehmpathy/visualogic/compare/v1.2.1...v1.2.2) (2024-07-27)
+
+
+### Bug Fixes
+
+* **audit:** bump deps per audit ([878af15](https://github.com/ehmpathy/visualogic/commit/878af154e30b449a9ebfcdbe3f5a74441e43e153))
+* **dobjs:** update procedure shape usability ([3c9bb7f](https://github.com/ehmpathy/visualogic/commit/3c9bb7f4d8246ee1acf2075d3cfcfbba07cf00a0))
+
 ## [1.2.1](https://github.com/ehmpathy/visualogic/compare/v1.2.0...v1.2.1) (2024-06-02)
 
 
