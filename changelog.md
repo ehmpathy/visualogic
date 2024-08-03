@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3](https://github.com/ehmpathy/visualogic/compare/v1.2.2...v1.2.3) (2024-08-03)
+
+
+### Bug Fixes
+
+* **async:** catch errors on breach log promise to avoid uncaught exceptions ([6442686](https://github.com/ehmpathy/visualogic/commit/6442686b71aa46cc98fa4273ea7ed757134158c0))
+* **practs:** bump practs to latest best ([860e4a8](https://github.com/ehmpathy/visualogic/commit/860e4a8df8bf6bea97ade2bede9312c0cbe236c1))
+
 ## [1.2.2](https://github.com/ehmpathy/visualogic/compare/v1.2.1...v1.2.2) (2024-07-27)
 
 
