@@ -4,6 +4,9 @@ import { isAPromise } from 'type-fns';
 
 const noOp = (...input: any) => input;
 const omitContext = (...input: any) => input[0]; // standard pattern for args = [input, context]
+const pickErrorMessage = (input: Error) => ({
+  error: { message: input.message },
+});
 const roundToHundredths = (num: number) => Math.round(num * 100) / 100; // https://stackoverflow.com/a/14968691/3068233
 
 /**
@@ -45,6 +48,11 @@ export const withLogTrail = <T extends (...args: any[]) => any>(
            * what of the output to log
            */
           output?: (value: Awaited<ReturnType<T>>) => any;
+
+          /**
+           * what of the error to log
+           */
+          error?: (error: Error) => any;
         };
 
     /**
@@ -76,6 +84,8 @@ export const withLogTrail = <T extends (...args: any[]) => any>(
     ('input' in logInput ? logInput.input : undefined) ?? omitContext;
   const logOutputMethod =
     ('output' in logInput ? logInput.output : undefined) ?? noOp;
+  const logErrorMethod =
+    ('error' in logInput ? logInput.error : undefined) ?? pickErrorMessage;
 
   // wrap the function
   return ((...input: any): any => {
@@ -126,12 +136,32 @@ export const withLogTrail = <T extends (...args: any[]) => any>(
       });
     };
 
+    // define what to do when we have an error
+    const logError = (error: Error) => {
+      const endTimeInMilliseconds = new Date().getTime();
+      const durationInMilliseconds =
+        endTimeInMilliseconds - startTimeInMilliseconds;
+      const durationInSeconds = roundToHundredths(durationInMilliseconds / 1e3); // https://stackoverflow.com/a/53970656/3068233
+      logMethod(`${name}.error`, {
+        input: logInputMethod(...input),
+        output: logErrorMethod(error),
+        ...(durationInSeconds >= durationReportingThresholdInSeconds
+          ? { duration: `${durationInSeconds} sec` } // only include the duration if the threshold was crossed
+          : {}),
+      });
+    };
+
     // if result is a promise, ensure we log after the output resolves
     if (isAPromise(result))
-      return result.then((output) => {
-        logOutput(output);
-        return output;
-      });
+      return result
+        .then((output) => {
+          logOutput(output);
+          return output;
+        })
+        .catch((error) => {
+          logError(error);
+          throw error;
+        });
 
     // otherwise, its not a promise, so its done, so log now and return the result
     logOutput(result);
