@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/ehmpathy/visualogic/compare/v1.2.3...v1.2.4) (2024-08-18)
+
+
+### Bug Fixes
+
+* **logs:** gracefully log errors with log trail ([baac9b1](https://github.com/ehmpathy/visualogic/commit/baac9b17dc725df4a0d7bc6655c1ea0d3ce12d1d))
+
 ## [1.2.3](https://github.com/ehmpathy/visualogic/compare/v1.2.2...v1.2.3) (2024-08-03)
 
 
