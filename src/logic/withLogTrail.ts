@@ -1,13 +1,17 @@
 import { UnexpectedCodePathError } from '@ehmpathy/error-fns';
-import { LogLevel, LogMethod, LogMethods } from 'simple-leveled-log-methods';
-import { isAPromise } from 'type-fns';
+import type {
+  LogLevel,
+  LogMethod,
+  LogMethods,
+} from 'simple-leveled-log-methods';
+import { Literalize, isAPromise } from 'type-fns';
 
 import {
-  Procedure,
   ProcedureContext,
   ProcedureInput,
   ProcedureOutput,
 } from '../domain/Procedure';
+import { VisualogicContext } from '../domain/constants';
 
 const noOp = (...input: any) => input;
 const omitContext = (...input: any) => input[0]; // standard pattern for args = [input, context]
@@ -25,14 +29,14 @@ const roundToHundredths = (num: number) => Math.round(num * 100) / 100; // https
  */
 export const withLogTrail = <
   TInput,
-  TContext extends { log: LogMethods },
+  TContext extends VisualogicContext,
   TOutput,
 >(
   logic: (input: TInput, context: TContext) => TOutput,
   {
     name: declaredName,
     durationReportingThresholdInSeconds = 1,
-    log: logInput,
+    log: logOptions,
   }: {
     /**
      * specifies the name of the function, if the function does not have a name assigned already
@@ -42,48 +46,37 @@ export const withLogTrail = <
     /**
      * enable redacting parts of the input or output from logging
      */
-    log:
-      | LogMethods
-      | {
-          /**
-           * specifies the log method to use to log with
-           */
-          methods: LogMethods; // TODO: use a logger which leverages async-context to scope all logs created inside of this fn w/ `${name}.progress: ${message}`; at that point, probably stick "inout output tracing" inside of that lib
+    log?: {
+      /**
+       * specifies the level to log the trail with
+       *
+       * note:
+       * - defaults to .debug // todo: debug to .trail
+       */
+      level?: LogLevel;
 
-          /**
-           * specifies the level to log the trail with
-           *
-           * note:
-           * - defaults to .debug // todo: debug to .trail
-           */
-          level?: LogLevel;
+      /**
+       * what of the input to log
+       */
+      input?: (...value: Parameters<typeof logic>) => any;
 
-          /**
-           * what of the input to log
-           */
-          input?: (...value: Parameters<typeof logic>) => any;
+      /**
+       * what of the output to log
+       */
+      output?: (value: Awaited<ReturnType<typeof logic>>) => any;
 
-          /**
-           * what of the output to log
-           */
-          output?: (value: Awaited<ReturnType<typeof logic>>) => any;
-
-          /**
-           * what of the error to log
-           */
-          error?: (error: Error) => any;
-        };
+      /**
+       * what of the error to log
+       */
+      error?: (error: Error) => any;
+    };
 
     /**
      * specifies the threshold after which a duration will be included on the output log
      */
     durationReportingThresholdInSeconds?: number;
   },
-): Procedure<
-  ProcedureInput<typeof logic>,
-  Omit<ProcedureContext<typeof logic>, 'log'> & { log?: LogMethods },
-  ProcedureOutput<typeof logic>
-> => {
+): typeof logic => {
   // cache the name of the function per wrapping
   const name: string | null = logic.name || declaredName || null; // use `\\` since `logic.name` returns `""` for anonymous functions
 
@@ -101,24 +94,18 @@ export const withLogTrail = <
     );
 
   // extract the log methods
-  const logMethods: LogMethods =
-    'methods' in logInput ? logInput.methods : logInput;
-  const logTrailLevel: LogLevel =
-    ('methods' in logInput ? logInput.level : undefined) ?? LogLevel.DEBUG;
-  const logInputMethod =
-    ('methods' in logInput ? logInput.input : undefined) ?? omitContext;
-  const logOutputMethod =
-    ('methods' in logInput ? logInput.output : undefined) ?? noOp;
-  const logErrorMethod =
-    ('methods' in logInput ? logInput.error : undefined) ?? pickErrorMessage;
+  const logTrailLevel: Literalize<LogLevel> = logOptions?.level ?? 'debug';
+  const logInputMethod = logOptions?.input ?? omitContext;
+  const logOutputMethod = logOptions?.output ?? noOp;
+  const logErrorMethod = logOptions?.error ?? pickErrorMessage;
 
   // wrap the function
   return (
     input: ProcedureInput<typeof logic>,
-    context: Omit<ProcedureContext<typeof logic>, 'log'> & { log?: LogMethods },
+    context: ProcedureContext<typeof logic>,
   ): ProcedureOutput<typeof logic> => {
     // now log the input
-    logMethods.debug(`${name}.input`, {
+    context.log.debug(`${name}.input`, {
       input: logInputMethod(input, context),
     });
 
@@ -126,23 +113,24 @@ export const withLogTrail = <
     const startTimeInMilliseconds = new Date().getTime();
 
     // define the context.log method that will be given to the logic
-    const logMethodsWithContext: LogMethods = {
+    const logMethodsWithContext: LogMethods & { _orig: LogMethods } = {
+      _orig: context.log?._orig ?? context.log,
       debug: (
         message: Parameters<LogMethod>[0],
         metadata: Parameters<LogMethod>[1],
-      ) => logMethods.debug(`${name}.progress: ${message}`, metadata),
+      ) => context.log.debug(`${name}.progress: ${message}`, metadata),
       info: (
         message: Parameters<LogMethod>[0],
         metadata: Parameters<LogMethod>[1],
-      ) => logMethods.info(`${name}.progress: ${message}`, metadata),
+      ) => context.log.info(`${name}.progress: ${message}`, metadata),
       warn: (
         message: Parameters<LogMethod>[0],
         metadata: Parameters<LogMethod>[1],
-      ) => logMethods.warn(`${name}.progress: ${message}`, metadata),
+      ) => context.log.warn(`${name}.progress: ${message}`, metadata),
       error: (
         message: Parameters<LogMethod>[0],
         metadata: Parameters<LogMethod>[1],
-      ) => logMethods.error(`${name}.progress: ${message}`, metadata),
+      ) => context.log.error(`${name}.progress: ${message}`, metadata),
     };
 
     // now execute the method
@@ -155,7 +143,7 @@ export const withLogTrail = <
     if (isAPromise(result)) {
       // define how to log the breach, on breach
       const onDurationBreach = () =>
-        logMethods[logTrailLevel](`${name}.duration.breach`, {
+        context.log[logTrailLevel](`${name}.duration.breach`, {
           input: logInputMethod(input, context),
           already: { duration: `${durationReportingThresholdInSeconds} sec` },
         });
@@ -180,7 +168,7 @@ export const withLogTrail = <
       const durationInMilliseconds =
         endTimeInMilliseconds - startTimeInMilliseconds;
       const durationInSeconds = roundToHundredths(durationInMilliseconds / 1e3); // https://stackoverflow.com/a/53970656/3068233
-      logMethods[logTrailLevel](`${name}.output`, {
+      context.log[logTrailLevel](`${name}.output`, {
         input: logInputMethod(input, context),
         output: logOutputMethod(output),
         ...(durationInSeconds >= durationReportingThresholdInSeconds
@@ -195,7 +183,7 @@ export const withLogTrail = <
       const durationInMilliseconds =
         endTimeInMilliseconds - startTimeInMilliseconds;
       const durationInSeconds = roundToHundredths(durationInMilliseconds / 1e3); // https://stackoverflow.com/a/53970656/3068233
-      logMethods[logTrailLevel](`${name}.error`, {
+      context.log[logTrailLevel](`${name}.error`, {
         input: logInputMethod(input, context),
         output: logErrorMethod(error),
         ...(durationInSeconds >= durationReportingThresholdInSeconds

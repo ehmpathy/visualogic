@@ -9,17 +9,17 @@ export const sleep = (ms: number) =>
 
 describe('withLogTrail', () => {
   beforeEach(() => jest.clearAllMocks());
-  describe('input output logging', () => {
+  describe('input output logs', () => {
     it('should be log input and output for a sync fn', () => {
       const castToUpperCase = withLogTrail(
         ({ name }: { name: string }) => {
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { methods: console } },
+        { name: 'castToUpperCase' },
       );
 
       // should run like normal
-      const uppered = castToUpperCase({ name: 'casey' }, {});
+      const uppered = castToUpperCase({ name: 'casey' }, { log: console });
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -38,11 +38,14 @@ describe('withLogTrail', () => {
           await sleep(100);
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { methods: console } },
+        { name: 'castToUpperCase' },
       );
 
       // should run like normal
-      const uppered = await castToUpperCase({ name: 'casey' }, {});
+      const uppered = await castToUpperCase(
+        { name: 'casey' },
+        { log: console },
+      );
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -55,6 +58,32 @@ describe('withLogTrail', () => {
         output: ['CASEY'],
       });
     });
+    it('should be log input and output for a generic fn', async () => {
+      const castToUpperCase = withLogTrail(
+        async <R extends { name: string }>(input: { row: R }) => {
+          await sleep(100);
+          return input.row.name.toUpperCase();
+        },
+        { name: 'castToUpperCase' },
+      );
+
+      // should run like normal
+      const uppered = await castToUpperCase<{ name: string; exid: string }>(
+        { row: { name: 'casey', exid: 'bae' } },
+        { log: console },
+      );
+      expect(uppered).toEqual('CASEY');
+
+      // should have logged input and output
+      expect(logDebugSpy).toHaveBeenCalledTimes(2);
+      expect(logDebugSpy).toHaveBeenNthCalledWith(1, 'castToUpperCase.input', {
+        input: { row: { exid: 'bae', name: 'casey' } },
+      });
+      expect(logDebugSpy).toHaveBeenNthCalledWith(2, 'castToUpperCase.output', {
+        input: { row: { exid: 'bae', name: 'casey' } },
+        output: ['CASEY'],
+      });
+    });
   });
   describe('duration reporting', () => {
     it('should report the duration of an operation if it takes more than 1 second by default', async () => {
@@ -63,11 +92,14 @@ describe('withLogTrail', () => {
           await sleep(1100);
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { methods: console } },
+        { name: 'castToUpperCase' },
       );
 
       // should run like normal
-      const uppered = await castToUpperCase({ name: 'casey' }, {});
+      const uppered = await castToUpperCase(
+        { name: 'casey' },
+        { log: console },
+      );
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -97,11 +129,11 @@ describe('withLogTrail', () => {
           context.log.debug('begin uppercasement', { on: name });
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { methods: console } },
+        { name: 'castToUpperCase' },
       );
 
       // should run like normal
-      const uppered = castToUpperCase({ name: 'casey' }, {});
+      const uppered = castToUpperCase({ name: 'casey' }, { log: console });
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -128,13 +160,13 @@ describe('withLogTrail', () => {
           context.log.debug('begin uppercasement', { on: name });
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { methods: console } },
+        { name: 'castToUpperCase' },
       );
 
       // should run like normal
       const uppered = castToUpperCase(
         { name: 'casey' },
-        { organization: 'superorg' },
+        { organization: 'superorg', log: console },
       );
       expect(uppered).toEqual('CASEY');
 
