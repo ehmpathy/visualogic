@@ -1,6 +1,8 @@
+import { LogMethods } from 'simple-leveled-log-methods';
+
 import { withLogTrail } from './withLogTrail';
 
-const logDebugSpy = jest.spyOn(console, 'log');
+const logDebugSpy = jest.spyOn(console, 'debug');
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,11 +15,11 @@ describe('withLogTrail', () => {
         ({ name }: { name: string }) => {
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { method: console.log } },
+        { name: 'castToUpperCase', log: { methods: console } },
       );
 
       // should run like normal
-      const uppered = castToUpperCase({ name: 'casey' });
+      const uppered = castToUpperCase({ name: 'casey' }, {});
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -36,11 +38,11 @@ describe('withLogTrail', () => {
           await sleep(100);
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { method: console.log } },
+        { name: 'castToUpperCase', log: { methods: console } },
       );
 
       // should run like normal
-      const uppered = await castToUpperCase({ name: 'casey' });
+      const uppered = await castToUpperCase({ name: 'casey' }, {});
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -61,11 +63,11 @@ describe('withLogTrail', () => {
           await sleep(1100);
           return name.toUpperCase();
         },
-        { name: 'castToUpperCase', log: { method: console.log } },
+        { name: 'castToUpperCase', log: { methods: console } },
       );
 
       // should run like normal
-      const uppered = await castToUpperCase({ name: 'casey' });
+      const uppered = await castToUpperCase({ name: 'casey' }, {});
       expect(uppered).toEqual('CASEY');
 
       // should have logged input and output
@@ -85,6 +87,70 @@ describe('withLogTrail', () => {
         input: { name: 'casey' },
         output: ['CASEY'],
         duration: expect.stringContaining(' sec'),
+      });
+    });
+  });
+  describe('log context', () => {
+    it('should be possible to log from the context', () => {
+      const castToUpperCase = withLogTrail(
+        ({ name }: { name: string }, context) => {
+          context.log.debug('begin uppercasement', { on: name });
+          return name.toUpperCase();
+        },
+        { name: 'castToUpperCase', log: { methods: console } },
+      );
+
+      // should run like normal
+      const uppered = castToUpperCase({ name: 'casey' }, {});
+      expect(uppered).toEqual('CASEY');
+
+      // should have logged input and output
+      expect(logDebugSpy).toHaveBeenCalledTimes(3);
+      expect(logDebugSpy).toHaveBeenNthCalledWith(1, 'castToUpperCase.input', {
+        input: { name: 'casey' },
+      });
+      expect(logDebugSpy).toHaveBeenNthCalledWith(
+        2,
+        'castToUpperCase.progress: begin uppercasement',
+        { on: 'casey' },
+      );
+      expect(logDebugSpy).toHaveBeenNthCalledWith(3, 'castToUpperCase.output', {
+        input: { name: 'casey' },
+        output: ['CASEY'],
+      });
+    });
+    it('should add log to prior context', () => {
+      const castToUpperCase = withLogTrail(
+        (
+          { name }: { name: string },
+          context: { organization: string; log: LogMethods },
+        ) => {
+          context.log.debug('begin uppercasement', { on: name });
+          return name.toUpperCase();
+        },
+        { name: 'castToUpperCase', log: { methods: console } },
+      );
+
+      // should run like normal
+      const uppered = castToUpperCase(
+        { name: 'casey' },
+        { organization: 'superorg' },
+      );
+      expect(uppered).toEqual('CASEY');
+
+      // should have logged input and output
+      expect(logDebugSpy).toHaveBeenCalledTimes(3);
+      expect(logDebugSpy).toHaveBeenNthCalledWith(1, 'castToUpperCase.input', {
+        input: { name: 'casey' },
+      });
+      expect(logDebugSpy).toHaveBeenNthCalledWith(
+        2,
+        'castToUpperCase.progress: begin uppercasement',
+        { on: 'casey' },
+      );
+      expect(logDebugSpy).toHaveBeenNthCalledWith(3, 'castToUpperCase.output', {
+        input: { name: 'casey' },
+        output: ['CASEY'],
       });
     });
   });
