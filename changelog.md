@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/ehmpathy/visualogic/compare/v1.2.4...v1.3.0) (2024-08-31)
+
+
+### Features
+
+* **context:** expose scoped log methods on context ([868d3d5](https://github.com/ehmpathy/visualogic/commit/868d3d5ee2d6316074bd20c658385b4a600a5942))
+
+
+### Bug Fixes
+
+* **context:** expect log methods declared via context ([11e906d](https://github.com/ehmpathy/visualogic/commit/11e906dbe814517b7447965717dab1322f00cb3b))
+
 ## [1.2.4](https://github.com/ehmpathy/visualogic/compare/v1.2.3...v1.2.4) (2024-08-18)
 
 
