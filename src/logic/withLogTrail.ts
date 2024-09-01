@@ -1,4 +1,5 @@
 import { UnexpectedCodePathError } from '@ehmpathy/error-fns';
+import { toMilliseconds, UniDuration } from '@ehmpathy/uni-time';
 import type {
   LogLevel,
   LogMethod,
@@ -20,6 +21,11 @@ const pickErrorMessage = (input: Error) => ({
 });
 const roundToHundredths = (num: number) => Math.round(num * 100) / 100; // https://stackoverflow.com/a/14968691/3068233
 
+const DEFAULT_DURATION_REPORT_THRESHOLD = process.env
+  .VISUALOGIC_DURATION_THRESHOLD
+  ? parseInt(process.env.VISUALOGIC_DURATION_THRESHOLD)
+  : toMilliseconds({ seconds: 1 });
+
 /**
  * enables input output logging and tracing for a method
  *
@@ -35,8 +41,10 @@ export const withLogTrail = <
   logic: (input: TInput, context: TContext) => TOutput,
   {
     name: declaredName,
-    durationReportingThresholdInSeconds = 1,
     log: logOptions,
+    duration = {
+      threshold: { milliseconds: DEFAULT_DURATION_REPORT_THRESHOLD },
+    },
   }: {
     /**
      * specifies the name of the function, if the function does not have a name assigned already
@@ -74,7 +82,9 @@ export const withLogTrail = <
     /**
      * specifies the threshold after which a duration will be included on the output log
      */
-    durationReportingThresholdInSeconds?: number;
+    duration?: {
+      threshold: UniDuration;
+    };
   },
 ): typeof logic => {
   // cache the name of the function per wrapping
@@ -98,6 +108,11 @@ export const withLogTrail = <
   const logInputMethod = logOptions?.input ?? omitContext;
   const logOutputMethod = logOptions?.output ?? noOp;
   const logErrorMethod = logOptions?.error ?? pickErrorMessage;
+
+  // define the duration threshold
+  const durationReportingThreshold = duration.threshold;
+  const durationReportingThresholdInSeconds =
+    toMilliseconds(durationReportingThreshold) / 1000;
 
   // wrap the function
   return (
