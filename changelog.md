@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/ehmpathy/visualogic/compare/v1.3.0...v1.3.1) (2024-09-01)
+
+
+### Bug Fixes
+
+* **threshold:** enable default threshold customization via envars ([0b3607e](https://github.com/ehmpathy/visualogic/commit/0b3607e1f99380595362c27a207057be82e9e3b5))
+
 ## [1.3.0](https://github.com/ehmpathy/visualogic/compare/v1.2.4...v1.3.0) (2024-08-31)
 
 
