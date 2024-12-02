@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/ehmpathy/visualogic/compare/v1.3.1...v1.3.2) (2024-12-02)
+
+
+### Bug Fixes
+
+* **name:** extract resource name better from tests ([5b2870a](https://github.com/ehmpathy/visualogic/commit/5b2870a3aed8ea46fdbba2e206f9fe6ce1251867))
+
 ## [1.3.1](https://github.com/ehmpathy/visualogic/compare/v1.3.0...v1.3.1) (2024-09-01)
 
 
