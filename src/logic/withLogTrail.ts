@@ -1,5 +1,10 @@
 import { UnexpectedCodePathError } from '@ehmpathy/error-fns';
 import { toMilliseconds, UniDuration } from '@ehmpathy/uni-time';
+import {
+  ProcedureContext,
+  ProcedureInput,
+  ProcedureOutput,
+} from 'domain-glossary-procedure';
 import type {
   LogLevel,
   LogMethod,
@@ -7,11 +12,6 @@ import type {
 } from 'simple-leveled-log-methods';
 import { Literalize, isAPromise } from 'type-fns';
 
-import {
-  ProcedureContext,
-  ProcedureInput,
-  ProcedureOutput,
-} from '../domain/Procedure';
 import { VisualogicContext } from '../domain/constants';
 
 const noOp = (...input: any) => input;
