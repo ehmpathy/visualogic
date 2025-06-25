@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.3](https://github.com/ehmpathy/visualogic/compare/v1.3.2...v1.3.3) (2025-06-25)
+
+
+### Bug Fixes
+
+* **deps:** bump to usage of domain-glossary-procedure ([ffcd3b2](https://github.com/ehmpathy/visualogic/commit/ffcd3b2a4f66a918ab317699151e4f92d44c22d5))
+* **practs:** bump to latest best ([7a1b657](https://github.com/ehmpathy/visualogic/commit/7a1b657bb4e0537b4b8fe4b27f984efc929330a3))
+
 ## [1.3.2](https://github.com/ehmpathy/visualogic/compare/v1.3.1...v1.3.2) (2024-12-02)
 
 
